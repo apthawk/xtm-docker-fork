@@ -1,2 +1,8 @@
 *.iml
 .env
+*.dump
+*.sql
+*.pem
+*.key
+.vscode/
+.idea/

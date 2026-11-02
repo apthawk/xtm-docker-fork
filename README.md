@@ -180,23 +180,40 @@ Once all services are healthy (this may take a few minutes on first start):
 
 ### Memory Requirements
 
-Adjust `ELASTIC_MEMORY_SIZE` based on your available RAM:
+Adjust memory settings in `.env` based on your available host RAM:
 
-| Total RAM | Recommended Setting |
-|-----------|---------------------|
-| 16GB | `2G` |
-| 32GB | `4G` |
-| 64GB+ | `8G` |
+| Total RAM | `ELASTIC_MEMORY_SIZE` | `OPENCTI_MEMORY_SIZE` | Recommended Profile |
+|-----------|-----------------------|-----------------------|---------------------|
+| 16GB | `2G` | `4096` | Core (leave `COMPOSE_PROFILES` empty) |
+| 32GB | `4G` | `8096` | `full` |
+| 64GB+ | `8G` | `16384` | `full` |
+
+### Profiles & Modular Components
+
+To reduce resource consumption during development or in resource-constrained environments, auxiliary connectors, collectors, and injectors are grouped into Docker Compose profiles:
+
+- **Core (default profile)**: OpenCTI, OpenAEV, XTM One, XTM Composer, shared databases, workers, and essential bootstrap datasets (`connector-opencti`, `connector-mitre`, `collector-openaev`).
+- **`connectors`**: OpenCTI import/export connectors (STIX, CSV, TXT, Document Analysis, YARA, External Reference).
+- **`collectors`**: OpenAEV collectors (Atomic Red Team, NVD NIST CVE, MITRE ATT&CK).
+- **`injectors`**: OpenAEV injectors (Nmap, Nuclei).
+- **`full`**: Enables all optional components simultaneously.
+
+Control profiles via `COMPOSE_PROFILES` in `.env`:
+```bash
+COMPOSE_PROFILES=full # Enables everything (default in .env.sample)
+# Or leave empty for minimal footprint (~6-8GB RAM)
+```
+Or directly from the CLI:
+```bash
+docker compose --profile connectors up -d
+```
 
 ### Scaling Workers
 
-Modify the worker replicas in `docker-compose.yml`:
+Modify the worker replicas via `OPENCTI_WORKER_REPLICAS` in `.env` (defaults to 3):
 
-```yaml
-worker:
-  deploy:
-    mode: replicated
-    replicas: 3  # Increase for higher throughput
+```bash
+OPENCTI_WORKER_REPLICAS=3  # Increase for higher ingestion throughput
 ```
 
 ### External Access
